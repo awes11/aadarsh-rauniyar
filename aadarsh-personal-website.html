@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aadarsh Kumar Rauniyar | Data Systems & Automation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Newsreader:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-bg: #FAFAF8;
+            --color-bg-alt: #F5F5F2;
+            --color-text: #2C3338;
+            --color-text-muted: #6B7280;
+            --color-accent: #4A6670;
+            --color-accent-soft: #E8EDEE;
+            --color-border: #E5E5E2;
+            --font-heading: 'Newsreader', Georgia, serif;
+            --font-body: 'DM Sans', -apple-system, sans-serif;
+            --max-width: 1100px;
+            --space-xs: 0.5rem;
+            --space-sm: 1rem;
+            --space-md: 2rem;
+            --space-lg: 4rem;
+            --space-xl: 6rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.7;
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            z-index: 9999;
+        }
+
+        a {
+            color: var(--color-accent);
+            text-decoration: none;
+            transition: opacity 0.2s ease;
+        }
+
+        a:hover { opacity: 0.7; }
+
+        .container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 0 var(--space-md);
+        }
+
+        .magnetic {
+            display: inline-block;
+            transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+            will-change: transform;
+        }
+
+        nav {
+            padding: var(--space-md) 0;
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            background: rgba(250, 250, 248, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.3s ease;
+        }
+
+        nav.scrolled { border-bottom-color: var(--color-border); }
+
+        nav .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: var(--font-heading);
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--color-text);
+            letter-spacing: -0.02em;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: var(--space-md);
+            list-style: none;
+        }
+
+        .nav-links li { position: relative; }
+
+        .nav-links a {
+            font-size: 0.9rem;
+            color: var(--color-text-muted);
+            transition: color 0.2s ease;
+            display: inline-block;
+            padding: 0.5rem 0;
+        }
+
+        .nav-links a:hover {
+            color: var(--color-text);
+            opacity: 1;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 50%;
+            width: 4px; height: 4px;
+            background: var(--color-accent);
+            border-radius: 50%;
+            transform: translateX(-50%) scale(0);
+            transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .nav-links a:hover::after {
+            transform: translateX(-50%) scale(1);
+        }
+
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding-top: 80px;
+        }
+
+        .hero-content { max-width: 720px; }
+
+        .hero h1 {
+            font-family: var(--font-heading);
+            font-size: clamp(2.2rem, 5vw, 3.2rem);
+            font-weight: 400;
+            line-height: 1.25;
+            letter-spacing: -0.02em;
+            margin-bottom: var(--space-md);
+            color: var(--color-text);
+        }
+
+        .hero h1 em {
+            font-style: italic;
+            color: var(--color-accent);
+            display: inline-block;
+        }
+
+        .hero-subtitle {
+            font-size: 1.1rem;
+            color: var(--color-text-muted);
+            margin-bottom: var(--space-lg);
+            max-width: 540px;
+        }
+
+        .hero-services {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-xs);
+            margin-bottom: var(--space-lg);
+        }
+
+        .hero-services span {
+            font-size: 0.85rem;
+            color: var(--color-text-muted);
+            padding: 0.4rem 0.9rem;
+            background: var(--color-bg-alt);
+            border-radius: 20px;
+            border: 1px solid var(--color-border);
+            display: inline-block;
+            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), 
+                        background 0.3s ease,
+                        border-color 0.3s ease;
+        }
+
+        .hero-services span:hover {
+            background: var(--color-accent-soft);
+            border-color: var(--color-accent);
+        }
+
+        .cta-group {
+            display: flex;
+            gap: var(--space-sm);
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.85rem 1.5rem;
+            font-size: 0.9rem;
+            font-family: var(--font-body);
+            border-radius: 6px;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: var(--color-text);
+            color: var(--color-bg);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.85;
+            color: var(--color-bg);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--color-text);
+            border: 1px solid var(--color-border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--color-text-muted);
+            opacity: 1;
+        }
+
+        .btn-inner {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        section { padding: var(--space-xl) 0; }
+
+        .section-header { margin-bottom: var(--space-lg); }
+
+        .section-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--color-text-muted);
+            margin-bottom: var(--space-xs);
+        }
+
+        .section-title {
+            font-family: var(--font-heading);
+            font-size: clamp(1.8rem, 4vw, 2.4rem);
+            font-weight: 400;
+            letter-spacing: -0.02em;
+        }
+
+        .about {
+            background: var(--color-bg-alt);
+            border-top: 1px solid var(--color-border);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: var(--space-xl);
+            align-items: start;
+        }
+
+        .about-intro {
+            position: sticky;
+            top: 120px;
+        }
+
+        .about-content p {
+            margin-bottom: var(--space-md);
+            color: var(--color-text);
+        }
+
+        .about-content p:last-child { margin-bottom: 0; }
+
+        .about-values {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-md);
+            margin-top: var(--space-lg);
+            padding-top: var(--space-lg);
+            border-top: 1px solid var(--color-border);
+        }
+
+        .value-item {
+            padding: var(--space-sm);
+            border-radius: 8px;
+            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+                        background 0.3s ease;
+        }
+
+        .value-item:hover { background: rgba(74, 102, 112, 0.05); }
+
+        .value-item h4 {
+            font-family: var(--font-heading);
+            font-weight: 500;
+            font-size: 1rem;
+            margin-bottom: 0.3rem;
+            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .value-item p {
+            font-size: 0.9rem;
+            color: var(--color-text-muted);
+            margin-bottom: 0;
+        }
+
+        .work-grid { display: grid; gap: var(--space-md); }
+
+        .case-study {
+            background: var(--color-bg-alt);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: var(--space-md);
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .case-study:hover { border-color: var(--color-text-muted); }
+
+        .case-study-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--space-sm);
+        }
+
+        .case-study-type {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--color-accent);
+            background: var(--color-accent-soft);
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .case-study h3 {
+            font-family: var(--font-heading);
+            font-size: 1.3rem;
+            font-weight: 400;
+            margin-bottom: var(--space-xs);
+            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .case-study-desc {
+            color: var(--color-text-muted);
+            font-size: 0.95rem;
+            margin-bottom: var(--space-sm);
+        }
+
+        .case-study-outcome {
+            display: flex;
+            gap: var(--space-md);
+            padding-top: var(--space-sm);
+            border-top: 1px solid var(--color-border);
+        }
+
+        .outcome-item {
+            font-size: 0.85rem;
+            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .outcome-item strong {
+            display: block;
+            font-family: var(--font-heading);
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--color-accent);
+        }
+
+        .process { background: var(--color-bg); }
+
+        .process-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-md);
+        }
+
+        .process-step {
+            padding: var(--space-md);
+            background: var(--color-bg-alt);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .process-step:hover {
+            border-color: var(--color-accent);
+            background: rgba(74, 102, 112, 0.03);
+        }
+
+        .process-number {
+            font-family: var(--font-heading);
+            font-size: 2rem;
+            font-weight: 400;
+            color: var(--color-accent);
+            opacity: 0.5;
+            line-height: 1;
+            margin-bottom: var(--space-sm);
+            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+                        opacity 0.3s ease;
+        }
+
+        .process-step:hover .process-number { opacity: 0.8; }
+
+        .process-step h4 {
+            font-family: var(--font-heading);
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: var(--space-xs);
+            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .process-step p {
+            font-size: 0.9rem;
+            color: var(--color-text-muted);
+        }
+
+        .skills {
+            background: var(--color-bg-alt);
+            border-top: 1px solid var(--color-border);
+        }
+
+        .skills-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: var(--space-xl);
+        }
+
+        .skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-xs);
+        }
+
+        .skill-tag {
+            font-size: 0.85rem;
+            padding: 0.5rem 1rem;
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 20px;
+            color: var(--color-text-muted);
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            cursor: default;
+        }
+
+        .skill-tag:hover {
+            border-color: var(--color-accent);
+            color: var(--color-accent);
+            background: var(--color-accent-soft);
+        }
+
+        .contact {
+            text-align: center;
+            padding: var(--space-xl) 0;
+        }
+
+        .contact-content {
+            max-width: 540px;
+            margin: 0 auto;
+        }
+
+        .contact h2 {
+            font-family: var(--font-heading);
+            font-size: clamp(1.8rem, 4vw, 2.4rem);
+            font-weight: 400;
+            margin-bottom: var(--space-sm);
+        }
+
+        .contact p {
+            color: var(--color-text-muted);
+            margin-bottom: var(--space-md);
+        }
+
+        .contact-links {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-md);
+        }
+
+        .contact-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.95rem;
+            color: var(--color-text);
+            padding: 0.6rem 1.2rem;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .contact-link:hover {
+            border-color: var(--color-text);
+            opacity: 1;
+        }
+
+        .contact-link svg {
+            width: 18px;
+            height: 18px;
+            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .contact-link-inner {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        footer {
+            padding: var(--space-md) 0;
+            border-top: 1px solid var(--color-border);
+            text-align: center;
+        }
+
+        footer p {
+            font-size: 0.85rem;
+            color: var(--color-text-muted);
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-in {
+            animation: fadeUp 0.6s ease forwards;
+            opacity: 0;
+        }
+
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+        .delay-4 { animation-delay: 0.4s; }
+
+        .cursor-glow {
+            position: fixed;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(74, 102, 112, 0.08) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            transform: translate(-50%, -50%);
+            transition: opacity 0.3s ease;
+            opacity: 0;
+        }
+
+        body:hover .cursor-glow { opacity: 1; }
+
+        @media (max-width: 900px) {
+            .about-grid { grid-template-columns: 1fr; gap: var(--space-lg); }
+            .about-intro { position: static; }
+            .process-grid { grid-template-columns: repeat(2, 1fr); }
+            .skills-content { grid-template-columns: 1fr; gap: var(--space-md); }
+        }
+
+        @media (max-width: 600px) {
+            .nav-links { gap: var(--space-sm); }
+            .nav-links a { font-size: 0.8rem; }
+            .hero-services span { font-size: 0.8rem; }
+            .process-grid { grid-template-columns: 1fr; }
+            .about-values { grid-template-columns: 1fr; }
+            .case-study-outcome { flex-direction: column; gap: var(--space-xs); }
+            .contact-links { flex-direction: column; align-items: center; }
+            .cursor-glow { display: none; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+            .cursor-glow { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="cursor-glow" id="cursorGlow"></div>
+
+    <nav id="navbar">
+        <div class="container">
+            <a href="#" class="logo magnetic" data-strength="20">Aadarsh Rauniyar</a>
+            <ul class="nav-links">
+                <li><a href="#about" class="magnetic" data-strength="25">About</a></li>
+                <li><a href="#work" class="magnetic" data-strength="25">Work</a></li>
+                <li><a href="#process" class="magnetic" data-strength="25">Process</a></li>
+                <li><a href="#contact" class="magnetic" data-strength="25">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="animate-in">I help organizations build <em>calm, reliable</em> data systems through automation and clear thinking.</h1>
+                <p class="hero-subtitle animate-in delay-1">When data feels messy or overwhelming, I bring clarity. I design systems that are easy to trust and built to last.</p>
+                <div class="hero-services animate-in delay-2">
+                    <span class="magnetic" data-strength="15">Workflow Automation</span>
+                    <span class="magnetic" data-strength="15">Data Systems</span>
+                    <span class="magnetic" data-strength="15">Analytics & Dashboards</span>
+                    <span class="magnetic" data-strength="15">Process Design</span>
+                </div>
+                <div class="cta-group animate-in delay-3">
+                    <a href="#work" class="btn btn-primary magnetic-btn" data-strength="12">
+                        <span class="btn-inner">See how I work</span>
+                    </a>
+                    <a href="#contact" class="btn btn-secondary magnetic-btn" data-strength="12">
+                        <span class="btn-inner">Get in touch</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="about" id="about">
+        <div class="container">
+            <div class="about-grid">
+                <div class="about-intro">
+                    <p class="section-label">About</p>
+                    <h2 class="section-title">Building systems you can rely on</h2>
+                </div>
+                <div class="about-content">
+                    <p>People often come to me when things feel messy or overwhelming—when spreadsheets multiply, when reports take too long, when the data just doesn't make sense anymore.</p>
+                    <p>My role is to slow things down, ask the right questions, and build systems that bring clarity. I focus on solutions that are simple to understand, easy to maintain, and genuinely useful for the people who use them every day.</p>
+                    <p>I've spent the past two years working with operational and business data—cleaning datasets, building dashboards, automating repetitive tasks, and helping teams make better decisions with the information they have.</p>
+                    <p>I hold a degree in Computing from Leeds Beckett University and am certified through IBM's Data Analyst Professional program.</p>
+                    
+                    <div class="about-values">
+                        <div class="value-item magnetic-card" data-strength="8">
+                            <h4>Clarity first</h4>
+                            <p>Before building anything, I make sure we understand the real problem.</p>
+                        </div>
+                        <div class="value-item magnetic-card" data-strength="8">
+                            <h4>Simplify before automating</h4>
+                            <p>The best system is often the simplest one that works.</p>
+                        </div>
+                        <div class="value-item magnetic-card" data-strength="8">
+                            <h4>Built to last</h4>
+                            <p>I design for maintenance, not just delivery.</p>
+                        </div>
+                        <div class="value-item magnetic-card" data-strength="8">
+                            <h4>Clear communication</h4>
+                            <p>No jargon. Just honest updates and straightforward explanations.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="work" id="work">
+        <div class="container">
+            <div class="section-header">
+                <p class="section-label">Selected Work</p>
+                <h2 class="section-title">Projects that brought clarity</h2>
+            </div>
+            <div class="work-grid">
+                <article class="case-study magnetic-card" data-strength="6">
+                    <div class="case-study-header">
+                        <span class="case-study-type">Dashboard</span>
+                    </div>
+                    <h3>Lead Analytics Dashboard for an Education Consultancy</h3>
+                    <p class="case-study-desc">Built an internal web-based dashboard to track student leads, application stages, counselor workloads, and institution-level outcomes—all in one place. Replaced manual tracking methods with a centralized, real-time view.</p>
+                    <div class="case-study-outcome">
+                        <div class="outcome-item">
+                            <strong>Unified view</strong>
+                            Centralized data from multiple sources
+                        </div>
+                        <div class="outcome-item">
+                            <strong>Real-time</strong>
+                            Instant visibility into operations
+                        </div>
+                        <div class="outcome-item">
+                            <strong>Actionable</strong>
+                            Identified bottlenecks and workload imbalances
+                        </div>
+                    </div>
+                </article>
+
+                <article class="case-study magnetic-card" data-strength="6">
+                    <div class="case-study-header">
+                        <span class="case-study-type">Data Integration</span>
+                    </div>
+                    <h3>Student Analytics with Standardized Data Pipeline</h3>
+                    <p class="case-study-desc">Developed a custom solution to combine and clean staff data stored in different formats across multiple files. Created tailored Python logic to produce a single, consistent dataset for management review.</p>
+                    <div class="case-study-outcome">
+                        <div class="outcome-item">
+                            <strong>Standardized</strong>
+                            One clean dataset from messy sources
+                        </div>
+                        <div class="outcome-item">
+                            <strong>Comparable</strong>
+                            Easy performance comparisons
+                        </div>
+                        <div class="outcome-item">
+                            <strong>Saved hours</strong>
+                            No more manual reconciliation
+                        </div>
+                    </div>
+                </article>
+
+                <article class="case-study magnetic-card" data-strength="6">
+                    <div class="case-study-header">
+                        <span class="case-study-type">Automation</span>
+                    </div>
+                    <h3>Internal Operations Dashboard & Task Automation</h3>
+                    <p class="case-study-desc">Created a dashboard to help management view and track operational data in one place. Built small Python programs to automate daily tasks and reduce manual work, while improving data entry practices across the team.</p>
+                    <div class="case-study-outcome">
+                        <div class="outcome-item">
+                            <strong>Reduced manual work</strong>
+                            Automated repetitive daily tasks
+                        </div>
+                        <div class="outcome-item">
+                            <strong>Better data quality</strong>
+                            Improved entry practices
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section class="process" id="process">
+        <div class="container">
+            <div class="section-header">
+                <p class="section-label">How I Work</p>
+                <h2 class="section-title">A calm, structured approach</h2>
+            </div>
+            <div class="process-grid">
+                <div class="process-step magnetic-card" data-strength="10">
+                    <div class="process-number">01</div>
+                    <h4>Understand</h4>
+                    <p>Listen carefully. Ask questions. Make sure we're solving the right problem before writing any code.</p>
+                </div>
+                <div class="process-step magnetic-card" data-strength="10">
+                    <div class="process-number">02</div>
+                    <h4>Simplify</h4>
+                    <p>Strip away complexity. Find the clearest path from messy data to useful insight.</p>
+                </div>
+                <div class="process-step magnetic-card" data-strength="10">
+                    <div class="process-number">03</div>
+                    <h4>Build</h4>
+                    <p>Create systems that are reliable, maintainable, and genuinely useful for the people who use them.</p>
+                </div>
+                <div class="process-step magnetic-card" data-strength="10">
+                    <div class="process-number">04</div>
+                    <h4>Support</h4>
+                    <p>Communicate clearly throughout. Ensure the solution works long after handover.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="skills" id="skills">
+        <div class="container">
+            <div class="skills-content">
+                <div>
+                    <p class="section-label">Tools & Skills</p>
+                    <h2 class="section-title">What I work with</h2>
+                </div>
+                <div class="skills-list">
+                    <span class="skill-tag magnetic" data-strength="20">Python</span>
+                    <span class="skill-tag magnetic" data-strength="20">SQL</span>
+                    <span class="skill-tag magnetic" data-strength="20">Power BI</span>
+                    <span class="skill-tag magnetic" data-strength="20">Excel</span>
+                    <span class="skill-tag magnetic" data-strength="20">Data Cleaning</span>
+                    <span class="skill-tag magnetic" data-strength="20">APIs</span>
+                    <span class="skill-tag magnetic" data-strength="20">Google Sheets</span>
+                    <span class="skill-tag magnetic" data-strength="20">Flask</span>
+                    <span class="skill-tag magnetic" data-strength="20">React</span>
+                    <span class="skill-tag magnetic" data-strength="20">Git</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="contact" id="contact">
+        <div class="container">
+            <div class="contact-content">
+                <h2>Let's work together</h2>
+                <p>If you think I can help bring clarity to your data challenges, I'd be happy to hear from you.</p>
+                <div class="contact-links">
+                    <a href="mailto:aadarsh.rauniyar11@gmail.com" class="contact-link magnetic-btn" data-strength="15">
+                        <span class="contact-link-inner">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                            </svg>
+                            Email me
+                        </span>
+                    </a>
+                    <a href="https://linkedin.com/in/aadarsh-rauniyar" target="_blank" class="contact-link magnetic-btn" data-strength="15">
+                        <span class="contact-link-inner">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                            </svg>
+                            LinkedIn
+                        </span>
+                    </a>
+                    <a href="https://github.com/aadarsh-rauniyar" target="_blank" class="contact-link magnetic-btn" data-strength="15">
+                        <span class="contact-link-inner">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                            </svg>
+                            GitHub
+                        </span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Aadarsh Kumar Rauniyar · Kathmandu, Nepal</p>
+        </div>
+    </footer>
+
+    <script>
+        // Magnetic hover effect class
+        class MagneticElement {
+            constructor(element) {
+                this.element = element;
+                this.strength = parseFloat(element.dataset.strength) || 20;
+                this.isCard = element.classList.contains('magnetic-card');
+                this.isBtn = element.classList.contains('magnetic-btn');
+                this.innerEl = element.querySelector('.btn-inner, .contact-link-inner');
+                this.isHovered = false;
+                this.bindEvents();
+            }
+
+            bindEvents() {
+                this.element.addEventListener('mouseenter', () => this.isHovered = true);
+                this.element.addEventListener('mouseleave', () => {
+                    this.isHovered = false;
+                    this.reset();
+                });
+                this.element.addEventListener('mousemove', (e) => this.onMouseMove(e));
+            }
+
+            onMouseMove(e) {
+                if (!this.isHovered) return;
+                
+                const rect = this.element.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                
+                const deltaX = e.clientX - centerX;
+                const deltaY = e.clientY - centerY;
+                
+                const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                const maxDistance = Math.max(rect.width, rect.height);
+                const normalizedDistance = Math.min(distance / maxDistance, 1);
+                const easing = 1 - Math.pow(1 - normalizedDistance, 2);
+                
+                const moveX = (deltaX / maxDistance) * this.strength * easing;
+                const moveY = (deltaY / maxDistance) * this.strength * easing;
+                
+                if (this.isCard) {
+                    const tiltX = (deltaY / rect.height) * 3;
+                    const tiltY = -(deltaX / rect.width) * 3;
+                    this.element.style.transform = `translate(${moveX * 0.3}px, ${moveY * 0.3}px) perspective(1000px) rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
+                } else if (this.isBtn && this.innerEl) {
+                    this.element.style.transform = `translate(${moveX * 0.4}px, ${moveY * 0.4}px)`;
+                    this.innerEl.style.transform = `translate(${moveX * 0.6}px, ${moveY * 0.6}px)`;
+                } else {
+                    this.element.style.transform = `translate(${moveX}px, ${moveY}px)`;
+                }
+            }
+
+            reset() {
+                this.element.style.transform = '';
+                if (this.innerEl) {
+                    this.innerEl.style.transform = '';
+                }
+            }
+        }
+
+        // Initialize magnetic elements
+        document.querySelectorAll('.magnetic, .magnetic-card, .magnetic-btn').forEach(el => {
+            new MagneticElement(el);
+        });
+
+        // Cursor glow follower
+        const cursorGlow = document.getElementById('cursorGlow');
+        let glowX = 0, glowY = 0;
+        let currentX = 0, currentY = 0;
+
+        document.addEventListener('mousemove', (e) => {
+            glowX = e.clientX;
+            glowY = e.clientY;
+        });
+
+        function animateGlow() {
+            currentX += (glowX - currentX) * 0.08;
+            currentY += (glowY - currentY) * 0.08;
+            cursorGlow.style.left = currentX + 'px';
+            cursorGlow.style.top = currentY + 'px';
+            requestAnimationFrame(animateGlow);
+        }
+        animateGlow();
+
+        // Navbar scroll effect
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Intersection observer for fade-in animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.case-study, .process-step, .value-item').forEach((el, index) => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`;
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
