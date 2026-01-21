@@ -163,6 +163,93 @@
             display: inline-block;
         }
 
+        /* Thanos Snap Disappear Effect - Letter by Letter */
+        .snap-text {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            font-style: italic;
+            color: var(--color-accent);
+        }
+
+        .snap-text .letter-container {
+            display: inline;
+        }
+
+        .snap-text .snap-letter {
+            position: relative;
+            display: inline-block;
+            transition: opacity 0.2s ease;
+        }
+
+        .snap-text .snap-letter.disintegrating {
+            opacity: 0;
+        }
+
+        .snap-text .particle-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: visible;
+        }
+
+        .snap-text .particle {
+            position: absolute;
+            background: var(--color-accent);
+            border-radius: 50%;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .snap-text .particle.active {
+            animation: snapDisintegrate var(--duration, 1.2s) var(--delay, 0s) cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .snap-text .particle.reforming {
+            animation: snapReform var(--duration, 0.8s) var(--delay, 0s) cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes snapDisintegrate {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) rotate(0deg) scale(1);
+            }
+            20% {
+                opacity: 0.9;
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--tx, 30px), var(--ty, -50px)) rotate(var(--rot, 180deg)) scale(0.3);
+            }
+        }
+
+        @keyframes snapReform {
+            0% {
+                opacity: 0;
+                transform: translate(var(--tx, 30px), var(--ty, -50px)) rotate(var(--rot, 180deg)) scale(0.3);
+            }
+            60% {
+                opacity: 0.6;
+            }
+            100% {
+                opacity: 0;
+                transform: translate(0, 0) rotate(0deg) scale(1);
+            }
+        }
+
+        /* Subtle hint animation */
+        .snap-text:not(.snapping):not(.reforming) .letter-container {
+            animation: subtleHint 3s 2s ease-in-out;
+        }
+
+        @keyframes subtleHint {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
         .hero-subtitle {
             font-size: 1.1rem;
             color: var(--color-text-muted);
@@ -624,7 +711,7 @@
     <section class="hero">
         <div class="container">
             <div class="hero-content">
-                <h1 class="animate-in">I make <em>data</em> problems disappear.</h1>
+                <h1 class="animate-in">I make <em>data</em> problems <span class="snap-text" id="snapText"><span class="letter-container" id="letterContainer">disappear.</span><span class="particle-container" id="particleContainer"></span></span></h1>
                 <p class="hero-subtitle animate-in delay-1">By slowing things down, thinking clearly, and building systems that work quietly in the background—so your data is something you can rely on.</p>
                 <div class="hero-services animate-in delay-2">
                     <span class="magnetic" data-strength="15">Workflow Automation</span>
@@ -848,6 +935,174 @@
     </footer>
 
     <script>
+        // Thanos Snap Disappear Effect - Letter by Letter
+        class ThanosSnap {
+            constructor(element) {
+                this.element = element;
+                this.letterContainer = element.querySelector('.letter-container');
+                this.particleContainer = element.querySelector('.particle-container');
+                this.originalText = this.letterContainer.textContent;
+                this.letters = [];
+                this.isSnapped = false;
+                this.isAnimating = false;
+                this.animationTimeouts = [];
+                
+                this.wrapLetters();
+                this.bindEvents();
+            }
+
+            wrapLetters() {
+                this.letterContainer.innerHTML = '';
+                this.letters = [];
+                
+                for (let i = 0; i < this.originalText.length; i++) {
+                    const span = document.createElement('span');
+                    span.className = 'snap-letter';
+                    span.textContent = this.originalText[i] === ' ' ? '\u00A0' : this.originalText[i];
+                    span.dataset.index = i;
+                    this.letterContainer.appendChild(span);
+                    this.letters.push(span);
+                }
+            }
+
+            bindEvents() {
+                this.element.addEventListener('mouseenter', () => this.snap());
+                this.element.addEventListener('mouseleave', () => this.reform());
+            }
+
+            createParticlesForLetter(letterEl, delayOffset) {
+                const rect = letterEl.getBoundingClientRect();
+                const containerRect = this.element.getBoundingClientRect();
+                
+                const offsetX = rect.left - containerRect.left;
+                const offsetY = rect.top - containerRect.top;
+                
+                // More particles, smaller size
+                const particleCount = 15 + Math.floor(Math.random() * 10);
+                const particles = [];
+                
+                for (let i = 0; i < particleCount; i++) {
+                    const particle = document.createElement('span');
+                    particle.className = 'particle';
+                    
+                    // Position within the letter bounds with slight randomness
+                    const x = offsetX + Math.random() * rect.width;
+                    const y = offsetY + Math.random() * rect.height;
+                    
+                    // Much smaller particles (0.5 - 1.5px)
+                    const size = 0.5 + Math.random() * 1;
+                    
+                    // Trajectory - upward and slightly right, with spread
+                    const tx = 15 + Math.random() * 40;
+                    const ty = -20 - Math.random() * 50;
+                    const rot = Math.random() * 360;
+                    
+                    // Stagger particles within each letter
+                    const delay = delayOffset + Math.random() * 0.15;
+                    const duration = 0.6 + Math.random() * 0.5;
+                    
+                    particle.style.cssText = `
+                        left: ${x}px;
+                        top: ${y}px;
+                        width: ${size}px;
+                        height: ${size}px;
+                        --tx: ${tx}px;
+                        --ty: ${ty}px;
+                        --rot: ${rot}deg;
+                        --delay: ${delay}s;
+                        --duration: ${duration}s;
+                    `;
+                    
+                    this.particleContainer.appendChild(particle);
+                    particles.push(particle);
+                }
+                
+                return particles;
+            }
+
+            snap() {
+                if (this.isAnimating || this.isSnapped) return;
+                this.isAnimating = true;
+                this.element.classList.add('snapping');
+                
+                // Clear any existing particles and timeouts
+                this.clearAnimations();
+                
+                // Animate letters from last to first
+                const totalLetters = this.letters.length;
+                const delayBetweenLetters = 80; // ms between each letter
+                
+                for (let i = totalLetters - 1; i >= 0; i--) {
+                    const reverseIndex = totalLetters - 1 - i;
+                    const delay = reverseIndex * delayBetweenLetters;
+                    
+                    const timeout = setTimeout(() => {
+                        const letter = this.letters[i];
+                        letter.classList.add('disintegrating');
+                        
+                        // Create particles for this letter
+                        const particles = this.createParticlesForLetter(letter, 0);
+                        particles.forEach(p => p.classList.add('active'));
+                    }, delay);
+                    
+                    this.animationTimeouts.push(timeout);
+                }
+                
+                // Mark animation as complete
+                const totalDuration = totalLetters * delayBetweenLetters + 1200;
+                const completeTimeout = setTimeout(() => {
+                    this.isSnapped = true;
+                    this.isAnimating = false;
+                }, totalDuration);
+                this.animationTimeouts.push(completeTimeout);
+            }
+
+            reform() {
+                if (!this.isSnapped && !this.isAnimating) return;
+                
+                this.clearAnimations();
+                this.isAnimating = true;
+                this.element.classList.remove('snapping');
+                this.element.classList.add('reforming');
+                
+                // Reform letters from first to last
+                const totalLetters = this.letters.length;
+                const delayBetweenLetters = 50; // Faster reform
+                
+                for (let i = 0; i < totalLetters; i++) {
+                    const delay = i * delayBetweenLetters;
+                    
+                    const timeout = setTimeout(() => {
+                        const letter = this.letters[i];
+                        letter.classList.remove('disintegrating');
+                    }, delay);
+                    
+                    this.animationTimeouts.push(timeout);
+                }
+                
+                // Clean up after reform
+                const totalDuration = totalLetters * delayBetweenLetters + 300;
+                const completeTimeout = setTimeout(() => {
+                    this.particleContainer.innerHTML = '';
+                    this.element.classList.remove('reforming');
+                    this.isSnapped = false;
+                    this.isAnimating = false;
+                }, totalDuration);
+                this.animationTimeouts.push(completeTimeout);
+            }
+
+            clearAnimations() {
+                this.animationTimeouts.forEach(t => clearTimeout(t));
+                this.animationTimeouts = [];
+            }
+        }
+
+        // Initialize Thanos snap effect
+        const snapText = document.getElementById('snapText');
+        if (snapText && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            new ThanosSnap(snapText);
+        }
+
         // Magnetic hover effect class
         class MagneticElement {
             constructor(element) {
