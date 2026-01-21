@@ -71,7 +71,6 @@
 
         .magnetic {
             display: inline-block;
-            transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
             will-change: transform;
         }
 
@@ -1103,7 +1102,7 @@
             new ThanosSnap(snapText);
         }
 
-        // Magnetic hover effect class
+        // Smooth Magnetic hover effect class with lerp interpolation
         class MagneticElement {
             constructor(element) {
                 this.element = element;
@@ -1111,17 +1110,57 @@
                 this.isCard = element.classList.contains('magnetic-card');
                 this.isBtn = element.classList.contains('magnetic-btn');
                 this.innerEl = element.querySelector('.btn-inner, .contact-link-inner');
+                
+                // Current and target positions for smooth interpolation
+                this.currentX = 0;
+                this.currentY = 0;
+                this.targetX = 0;
+                this.targetY = 0;
+                
+                // For cards - tilt values
+                this.currentTiltX = 0;
+                this.currentTiltY = 0;
+                this.targetTiltX = 0;
+                this.targetTiltY = 0;
+                
+                // For buttons with inner elements
+                this.currentInnerX = 0;
+                this.currentInnerY = 0;
+                this.targetInnerX = 0;
+                this.targetInnerY = 0;
+                
                 this.isHovered = false;
+                this.isAnimating = false;
+                this.lerpFactor = 0.12; // Smoothness factor (lower = smoother but slower)
+                this.returnLerpFactor = 0.08; // Even smoother return
+                
                 this.bindEvents();
             }
 
             bindEvents() {
-                this.element.addEventListener('mouseenter', () => this.isHovered = true);
+                this.element.addEventListener('mouseenter', () => {
+                    this.isHovered = true;
+                    if (!this.isAnimating) {
+                        this.isAnimating = true;
+                        this.animate();
+                    }
+                });
+                
                 this.element.addEventListener('mouseleave', () => {
                     this.isHovered = false;
-                    this.reset();
+                    this.targetX = 0;
+                    this.targetY = 0;
+                    this.targetTiltX = 0;
+                    this.targetTiltY = 0;
+                    this.targetInnerX = 0;
+                    this.targetInnerY = 0;
                 });
+                
                 this.element.addEventListener('mousemove', (e) => this.onMouseMove(e));
+            }
+
+            lerp(start, end, factor) {
+                return start + (end - start) * factor;
             }
 
             onMouseMove(e) {
@@ -1136,28 +1175,76 @@
                 
                 const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
                 const maxDistance = Math.max(rect.width, rect.height);
-                const normalizedDistance = Math.min(distance / maxDistance, 1);
-                const easing = 1 - Math.pow(1 - normalizedDistance, 2);
                 
-                const moveX = (deltaX / maxDistance) * this.strength * easing;
-                const moveY = (deltaY / maxDistance) * this.strength * easing;
+                // Calculate movement based on cursor position relative to center
+                const moveX = (deltaX / maxDistance) * this.strength;
+                const moveY = (deltaY / maxDistance) * this.strength;
                 
                 if (this.isCard) {
-                    const tiltX = (deltaY / rect.height) * 3;
-                    const tiltY = -(deltaX / rect.width) * 3;
-                    this.element.style.transform = `translate(${moveX * 0.3}px, ${moveY * 0.3}px) perspective(1000px) rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
+                    this.targetX = moveX * 0.3;
+                    this.targetY = moveY * 0.3;
+                    this.targetTiltX = (deltaY / rect.height) * 4;
+                    this.targetTiltY = -(deltaX / rect.width) * 4;
                 } else if (this.isBtn && this.innerEl) {
-                    this.element.style.transform = `translate(${moveX * 0.4}px, ${moveY * 0.4}px)`;
-                    this.innerEl.style.transform = `translate(${moveX * 0.6}px, ${moveY * 0.6}px)`;
+                    this.targetX = moveX * 0.4;
+                    this.targetY = moveY * 0.4;
+                    this.targetInnerX = moveX * 0.6;
+                    this.targetInnerY = moveY * 0.6;
                 } else {
-                    this.element.style.transform = `translate(${moveX}px, ${moveY}px)`;
+                    this.targetX = moveX;
+                    this.targetY = moveY;
                 }
             }
 
-            reset() {
-                this.element.style.transform = '';
-                if (this.innerEl) {
-                    this.innerEl.style.transform = '';
+            animate() {
+                // Use different lerp factors for entering vs returning
+                const factor = this.isHovered ? this.lerpFactor : this.returnLerpFactor;
+                
+                // Interpolate current values toward target
+                this.currentX = this.lerp(this.currentX, this.targetX, factor);
+                this.currentY = this.lerp(this.currentY, this.targetY, factor);
+                
+                if (this.isCard) {
+                    this.currentTiltX = this.lerp(this.currentTiltX, this.targetTiltX, factor);
+                    this.currentTiltY = this.lerp(this.currentTiltY, this.targetTiltY, factor);
+                    this.element.style.transform = `translate3d(${this.currentX}px, ${this.currentY}px, 0) perspective(1000px) rotateX(${this.currentTiltX}deg) rotateY(${this.currentTiltY}deg)`;
+                } else if (this.isBtn && this.innerEl) {
+                    this.currentInnerX = this.lerp(this.currentInnerX, this.targetInnerX, factor);
+                    this.currentInnerY = this.lerp(this.currentInnerY, this.targetInnerY, factor);
+                    this.element.style.transform = `translate3d(${this.currentX}px, ${this.currentY}px, 0)`;
+                    this.innerEl.style.transform = `translate3d(${this.currentInnerX}px, ${this.currentInnerY}px, 0)`;
+                } else {
+                    this.element.style.transform = `translate3d(${this.currentX}px, ${this.currentY}px, 0)`;
+                }
+                
+                // Check if we need to keep animating
+                const threshold = 0.01;
+                const isMoving = 
+                    Math.abs(this.currentX - this.targetX) > threshold ||
+                    Math.abs(this.currentY - this.targetY) > threshold ||
+                    Math.abs(this.currentTiltX - this.targetTiltX) > threshold ||
+                    Math.abs(this.currentTiltY - this.targetTiltY) > threshold ||
+                    Math.abs(this.currentInnerX - this.targetInnerX) > threshold ||
+                    Math.abs(this.currentInnerY - this.targetInnerY) > threshold;
+                
+                if (isMoving || this.isHovered) {
+                    requestAnimationFrame(() => this.animate());
+                } else {
+                    // Snap to final position and stop
+                    this.currentX = this.targetX;
+                    this.currentY = this.targetY;
+                    this.currentTiltX = this.targetTiltX;
+                    this.currentTiltY = this.targetTiltY;
+                    this.currentInnerX = this.targetInnerX;
+                    this.currentInnerY = this.targetInnerY;
+                    
+                    if (!this.isHovered) {
+                        this.element.style.transform = '';
+                        if (this.innerEl) {
+                            this.innerEl.style.transform = '';
+                        }
+                    }
+                    this.isAnimating = false;
                 }
             }
         }
