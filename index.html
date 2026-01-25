@@ -9,21 +9,24 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Newsreader:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
     <style>
         :root {
-            --color-bg: #FAFAF8;
-            --color-bg-alt: #F5F5F2;
-            --color-text: #2C3338;
-            --color-text-muted: #6B7280;
-            --color-accent: #4A6670;
-            --color-accent-soft: #E8EDEE;
-            --color-border: #E5E5E2;
+            --color-bg: #F5F4F1;
+            --color-bg-alt: #ECEAE6;
+            --color-text: #1A1A1A;
+            --color-text-muted: #5C5C5C;
+            --color-accent: #8B7355;
+            --color-accent-soft: #E8E4DD;
+            --color-border: #D4D0C8;
             --font-heading: 'Newsreader', Georgia, serif;
             --font-body: 'DM Sans', -apple-system, sans-serif;
-            --max-width: 1100px;
+            --max-width: 900px;
             --space-xs: 0.5rem;
             --space-sm: 1rem;
             --space-md: 2rem;
             --space-lg: 4rem;
             --space-xl: 6rem;
+            --photo-width-full: 32vw;
+            --photo-width-collapsed: 12vw;
+            --photo-min-collapsed: 100px;
         }
 
         * {
@@ -44,13 +47,14 @@
             overflow-x: hidden;
         }
 
+        /* Subtle noise texture */
         body::before {
             content: '';
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
             pointer-events: none;
-            opacity: 0.03;
+            opacity: 0.025;
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
             z-index: 9999;
         }
@@ -63,58 +67,103 @@
 
         a:hover { opacity: 0.7; }
 
-        .container {
-            max-width: var(--max-width);
-            margin: 0 auto;
-            padding: 0 var(--space-md);
-        }
-
-        .magnetic {
-            display: inline-block;
-            will-change: transform;
-        }
-
+        /* ============================================
+           NAVIGATION - 3-Section Design
+           Top/bottom transparent, middle visible strip
+           ============================================ */
         nav {
-            padding: var(--space-md) 0;
             position: fixed;
-            top: 0; left: 0; right: 0;
-            background: rgba(250, 250, 248, 0.9);
-            backdrop-filter: blur(10px);
+            top: 0;
+            left: 0;
+            right: 0;
             z-index: 100;
-            border-bottom: 1px solid transparent;
-            transition: border-color 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            pointer-events: none; /* Allow clicks to pass through transparent areas */
         }
 
-        nav.scrolled { border-bottom-color: var(--color-border); }
+        /* Top transparent zone - for magnetic hover range */
+        .nav-top-zone {
+            height: 20px;
+            background: transparent;
+            pointer-events: auto; /* Capture hover for magnetic */
+        }
 
-        nav .container {
+        /* Middle visible strip - the actual nav bar */
+        .nav-middle-zone {
+            padding: 0 var(--space-sm);
+            pointer-events: auto;
+        }
+
+        .nav-strip {
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            background: var(--color-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.06);
+            overflow: visible; /* Allow magnetic elements to extend */
+        }
+
+        /* Bottom transparent zone - for magnetic hover range */
+        .nav-bottom-zone {
+            height: 20px;
+            background: transparent;
+            pointer-events: auto; /* Capture hover for magnetic */
+        }
+
+        /* Logo section */
+        .nav-logo-section {
+            width: var(--photo-width-full);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0.85rem var(--space-md);
+            transition: width 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        body.scrolled .nav-logo-section {
+            width: max(var(--photo-width-collapsed), var(--photo-min-collapsed));
         }
 
         .logo {
             font-family: var(--font-heading);
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 500;
             color: var(--color-text);
             letter-spacing: -0.02em;
+            white-space: nowrap;
+            position: relative;
+        }
+
+        body.scrolled .logo {
+            font-size: 0.85rem;
+        }
+
+        /* Nav links section */
+        .nav-links-section {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0.85rem var(--space-md);
         }
 
         .nav-links {
             display: flex;
-            gap: var(--space-md);
+            gap: var(--space-lg);
             list-style: none;
         }
 
-        .nav-links li { position: relative; }
+        .nav-links li {
+            position: relative;
+        }
 
         .nav-links a {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: var(--color-text-muted);
             transition: color 0.2s ease;
+            position: relative;
             display: inline-block;
-            padding: 0.5rem 0;
         }
 
         .nav-links a:hover {
@@ -125,8 +174,10 @@
         .nav-links a::after {
             content: '';
             position: absolute;
-            bottom: 0; left: 50%;
-            width: 4px; height: 4px;
+            bottom: -4px;
+            left: 50%;
+            width: 4px;
+            height: 4px;
             background: var(--color-accent);
             border-radius: 50%;
             transform: translateX(-50%) scale(0);
@@ -137,18 +188,150 @@
             transform: translateX(-50%) scale(1);
         }
 
+        /* ============================================
+           INVISIBLE HIT AREA FOR MAGNETIC ELEMENTS
+           20px padding on all sides via ::before
+           ============================================ */
+        .magnetic,
+        .magnetic-card,
+        .magnetic-btn,
+        .nav-links a,
+        .btn,
+        .contact-link,
+        .skill-tag,
+        .hero-services span {
+            position: relative;
+        }
+
+        .magnetic::before,
+        .magnetic-btn::before,
+        .nav-links a::before,
+        .btn::before,
+        .contact-link::before,
+        .skill-tag::before,
+        .hero-services span::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: -20px;
+            right: -20px;
+            bottom: -20px;
+            z-index: -1;
+            /* Invisible expanded hit area */
+        }
+
+        /* Cards need slightly larger hit area */
+        .magnetic-card::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: -20px;
+            right: -20px;
+            bottom: -20px;
+            z-index: -1;
+        }
+
+        /* ============================================
+           MAGNETIC HOVER EFFECT BASE STYLES
+           ============================================ */
+        .magnetic {
+            display: inline-block;
+            will-change: transform;
+        }
+
+        .magnetic-card {
+            will-change: transform;
+        }
+
+        .magnetic-btn {
+            will-change: transform;
+        }
+
+        .magnetic-btn .btn-inner,
+        .magnetic-btn .contact-link-inner {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            will-change: transform;
+        }
+
+        /* ============================================
+           PERSISTENT PHOTO SIDEBAR
+           ============================================ */
+        .photo-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--photo-width-full);
+            height: 100vh;
+            z-index: 50;
+            overflow: hidden;
+            transition: width 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        body.scrolled .photo-sidebar {
+            width: max(var(--photo-width-collapsed), var(--photo-min-collapsed));
+        }
+
+        .photo-sidebar img {
+            width: var(--photo-width-full);
+            height: 100%;
+            object-fit: cover;
+            object-position: center center;
+            filter: grayscale(5%) contrast(1.02);
+            transition: filter 0.6s ease;
+        }
+
+        .photo-sidebar:hover img {
+            filter: grayscale(0%) contrast(1);
+        }
+
+        .photo-sidebar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 1px;
+            height: 100%;
+            background: var(--color-border);
+        }
+
+        /* ============================================
+           MAIN CONTENT AREA
+           ============================================ */
+        .main-content {
+            margin-left: var(--photo-width-full);
+            min-height: 100vh;
+            transition: margin-left 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        body.scrolled .main-content {
+            margin-left: max(var(--photo-width-collapsed), var(--photo-min-collapsed));
+        }
+
+        .container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 0 var(--space-lg);
+        }
+
+        /* ============================================
+           HERO SECTION
+           ============================================ */
         .hero {
             min-height: 100vh;
             display: flex;
             align-items: center;
-            padding-top: 100px;
+            padding: var(--space-xl) 0;
         }
 
-        .hero-content { max-width: 720px; }
+        .hero-content {
+            max-width: 600px;
+        }
 
         .hero h1 {
             font-family: var(--font-heading);
-            font-size: clamp(2.2rem, 5vw, 3.2rem);
+            font-size: clamp(2rem, 4vw, 2.8rem);
             font-weight: 400;
             line-height: 1.25;
             letter-spacing: -0.02em;
@@ -159,16 +342,13 @@
         .hero h1 em {
             font-style: italic;
             color: var(--color-accent);
-            display: inline-block;
         }
 
-        /* Thanos Snap Disappear Effect - Letter by Letter */
+        /* Thanos Snap Effect */
         .snap-text {
             position: relative;
             display: inline-block;
             cursor: pointer;
-             /* font-style: italic;
-           color: var(--color-accent); */
         }
 
         .snap-text .letter-container {
@@ -207,39 +387,12 @@
             animation: snapDisintegrate var(--duration, 1.2s) var(--delay, 0s) cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
 
-        .snap-text .particle.reforming {
-            animation: snapReform var(--duration, 0.8s) var(--delay, 0s) cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-
         @keyframes snapDisintegrate {
-            0% {
-                opacity: 1;
-                transform: translate(0, 0) rotate(0deg) scale(1);
-            }
-            20% {
-                opacity: 0.9;
-            }
-            100% {
-                opacity: 0;
-                transform: translate(var(--tx, 30px), var(--ty, -50px)) rotate(var(--rot, 180deg)) scale(0.3);
-            }
+            0% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
+            20% { opacity: 0.9; }
+            100% { opacity: 0; transform: translate(var(--tx, 30px), var(--ty, -50px)) rotate(var(--rot, 180deg)) scale(0.3); }
         }
 
-        @keyframes snapReform {
-            0% {
-                opacity: 0;
-                transform: translate(var(--tx, 30px), var(--ty, -50px)) rotate(var(--rot, 180deg)) scale(0.3);
-            }
-            60% {
-                opacity: 0.6;
-            }
-            100% {
-                opacity: 0;
-                transform: translate(0, 0) rotate(0deg) scale(1);
-            }
-        }
-
-        /* Subtle hint animation */
         .snap-text:not(.snapping):not(.reforming) .letter-container {
             animation: subtleHint 3s 2s ease-in-out;
         }
@@ -250,10 +403,10 @@
         }
 
         .hero-subtitle {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             color: var(--color-text-muted);
             margin-bottom: var(--space-lg);
-            max-width: 540px;
+            max-width: 480px;
         }
 
         .hero-services {
@@ -264,16 +417,14 @@
         }
 
         .hero-services span {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--color-text-muted);
-            padding: 0.4rem 0.9rem;
+            padding: 0.4rem 0.85rem;
             background: var(--color-bg-alt);
             border-radius: 20px;
             border: 1px solid var(--color-border);
+            transition: all 0.3s ease;
             display: inline-block;
-            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), 
-                        background 0.3s ease,
-                        border-color 0.3s ease;
         }
 
         .hero-services span:hover {
@@ -291,14 +442,12 @@
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            padding: 0.85rem 1.5rem;
-            font-size: 0.9rem;
+            padding: 0.8rem 1.4rem;
+            font-size: 0.85rem;
             font-family: var(--font-body);
             border-radius: 6px;
-            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            transition: all 0.3s ease;
             cursor: pointer;
-            position: relative;
-            overflow: hidden;
         }
 
         .btn-primary {
@@ -323,48 +472,37 @@
             opacity: 1;
         }
 
-        .btn-inner {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        /* ============================================
+           SECTIONS
+           ============================================ */
+        section {
+            padding: var(--space-xl) 0;
         }
 
-        section { padding: var(--space-xl) 0; }
-
-        .section-header { margin-bottom: var(--space-lg); }
+        .section-header {
+            margin-bottom: var(--space-lg);
+        }
 
         .section-label {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: var(--color-text-muted);
+            letter-spacing: 0.12em;
+            color: var(--color-accent);
             margin-bottom: var(--space-xs);
         }
 
         .section-title {
             font-family: var(--font-heading);
-            font-size: clamp(1.8rem, 4vw, 2.4rem);
+            font-size: clamp(1.6rem, 3vw, 2rem);
             font-weight: 400;
             letter-spacing: -0.02em;
         }
 
+        /* About */
         .about {
             background: var(--color-bg-alt);
             border-top: 1px solid var(--color-border);
             border-bottom: 1px solid var(--color-border);
-        }
-
-        .about-grid {
-            display: grid;
-            grid-template-columns: 1fr 1.5fr;
-            gap: var(--space-xl);
-            align-items: start;
-        }
-
-        .about-intro {
-            position: sticky;
-            top: 120px;
         }
 
         .about-content p {
@@ -372,7 +510,9 @@
             color: var(--color-text);
         }
 
-        .about-content p:last-child { margin-bottom: 0; }
+        .about-content p:last-of-type {
+            margin-bottom: 0;
+        }
 
         .about-values {
             display: grid;
@@ -383,42 +523,36 @@
             border-top: 1px solid var(--color-border);
         }
 
-        .value-item {
-            padding: var(--space-sm);
-            border-radius: 8px;
-            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1),
-                        background 0.3s ease;
-        }
-
-        .value-item:hover { background: rgba(74, 102, 112, 0.05); }
-
         .value-item h4 {
             font-family: var(--font-heading);
             font-weight: 500;
-            font-size: 1rem;
-            margin-bottom: 0.3rem;
-            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            font-size: 0.95rem;
+            margin-bottom: 0.25rem;
         }
 
         .value-item p {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: var(--color-text-muted);
             margin-bottom: 0;
         }
 
-        .work-grid { display: grid; gap: var(--space-md); }
+        /* Work */
+        .work-grid {
+            display: grid;
+            gap: var(--space-md);
+        }
 
         .case-study {
             background: var(--color-bg-alt);
             border: 1px solid var(--color-border);
             border-radius: 8px;
             padding: var(--space-md);
-            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-            cursor: pointer;
-            position: relative;
+            transition: border-color 0.3s ease;
         }
 
-        .case-study:hover { border-color: var(--color-text-muted); }
+        .case-study:hover {
+            border-color: var(--color-text-muted);
+        }
 
         .case-study-header {
             display: flex;
@@ -428,27 +562,25 @@
         }
 
         .case-study-type {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             text-transform: uppercase;
             letter-spacing: 0.08em;
             color: var(--color-accent);
             background: var(--color-accent-soft);
-            padding: 0.3rem 0.6rem;
+            padding: 0.25rem 0.5rem;
             border-radius: 4px;
-            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
         }
 
         .case-study h3 {
             font-family: var(--font-heading);
-            font-size: 1.3rem;
+            font-size: 1.15rem;
             font-weight: 400;
             margin-bottom: var(--space-xs);
-            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
         }
 
         .case-study-desc {
             color: var(--color-text-muted);
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             margin-bottom: var(--space-sm);
         }
 
@@ -460,23 +592,21 @@
         }
 
         .outcome-item {
-            font-size: 0.85rem;
-            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            font-size: 0.8rem;
         }
 
         .outcome-item strong {
             display: block;
             font-family: var(--font-heading);
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 500;
             color: var(--color-accent);
         }
 
-        .process { background: var(--color-bg); }
-
+        /* Process */
         .process-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(2, 1fr);
             gap: var(--space-md);
         }
 
@@ -485,50 +615,43 @@
             background: var(--color-bg-alt);
             border: 1px solid var(--color-border);
             border-radius: 8px;
-            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            transition: border-color 0.3s ease;
         }
 
         .process-step:hover {
             border-color: var(--color-accent);
-            background: rgba(74, 102, 112, 0.03);
         }
 
         .process-number {
             font-family: var(--font-heading);
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: 400;
             color: var(--color-accent);
-            opacity: 0.5;
+            opacity: 0.4;
             line-height: 1;
             margin-bottom: var(--space-sm);
-            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1),
-                        opacity 0.3s ease;
         }
 
-        .process-step:hover .process-number { opacity: 0.8; }
+        .process-step:hover .process-number {
+            opacity: 0.7;
+        }
 
         .process-step h4 {
             font-family: var(--font-heading);
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 500;
             margin-bottom: var(--space-xs);
-            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
         }
 
         .process-step p {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: var(--color-text-muted);
         }
 
+        /* Skills */
         .skills {
             background: var(--color-bg-alt);
             border-top: 1px solid var(--color-border);
-        }
-
-        .skills-content {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: var(--space-xl);
         }
 
         .skills-list {
@@ -538,35 +661,33 @@
         }
 
         .skill-tag {
-            font-size: 0.85rem;
-            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+            padding: 0.45rem 0.9rem;
             background: var(--color-bg);
             border: 1px solid var(--color-border);
             border-radius: 20px;
             color: var(--color-text-muted);
-            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-            cursor: default;
+            transition: all 0.3s ease;
+            display: inline-block;
         }
 
         .skill-tag:hover {
             border-color: var(--color-accent);
             color: var(--color-accent);
-            background: var(--color-accent-soft);
         }
 
+        /* Contact */
         .contact {
-            text-align: center;
             padding: var(--space-xl) 0;
         }
 
         .contact-content {
-            max-width: 540px;
-            margin: 0 auto;
+            max-width: 480px;
         }
 
         .contact h2 {
             font-family: var(--font-heading);
-            font-size: clamp(1.8rem, 4vw, 2.4rem);
+            font-size: clamp(1.6rem, 3vw, 2rem);
             font-weight: 400;
             margin-bottom: var(--space-sm);
         }
@@ -578,20 +699,20 @@
 
         .contact-links {
             display: flex;
-            justify-content: center;
-            gap: var(--space-md);
+            gap: var(--space-sm);
+            flex-wrap: wrap;
         }
 
         .contact-link {
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             color: var(--color-text);
-            padding: 0.6rem 1.2rem;
+            padding: 0.5rem 1rem;
             border: 1px solid var(--color-border);
             border-radius: 6px;
-            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            transition: all 0.3s ease;
         }
 
         .contact-link:hover {
@@ -600,86 +721,228 @@
         }
 
         .contact-link svg {
-            width: 18px;
-            height: 18px;
-            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            width: 16px;
+            height: 16px;
         }
 
-        .contact-link-inner {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-        }
-
+        /* Footer */
         footer {
             padding: var(--space-md) 0;
             border-top: 1px solid var(--color-border);
-            text-align: center;
         }
 
         footer p {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--color-text-muted);
         }
 
+        /* ============================================
+           ANIMATIONS
+           ============================================ */
         @keyframes fadeUp {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         .animate-in {
-            animation: fadeUp 0.6s ease forwards;
+            animation: fadeUp 0.5s ease forwards;
             opacity: 0;
         }
 
         .delay-1 { animation-delay: 0.1s; }
         .delay-2 { animation-delay: 0.2s; }
         .delay-3 { animation-delay: 0.3s; }
-        .delay-4 { animation-delay: 0.4s; }
 
-        .cursor-glow {
-            position: fixed;
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(74, 102, 112, 0.08) 0%, transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 0;
-            transform: translate(-50%, -50%);
-            transition: opacity 0.3s ease;
-            opacity: 0;
+        /* ============================================
+           RESPONSIVE - Tablet
+           ============================================ */
+        @media (max-width: 1100px) {
+            :root {
+                --photo-width-full: 30vw;
+                --photo-width-collapsed: 10vw;
+            }
         }
-
-        body:hover .cursor-glow { opacity: 1; }
 
         @media (max-width: 900px) {
-            .about-grid { grid-template-columns: 1fr; gap: var(--space-lg); }
-            .about-intro { position: static; }
-            .process-grid { grid-template-columns: repeat(2, 1fr); }
-            .skills-content { grid-template-columns: 1fr; gap: var(--space-md); }
+            .photo-sidebar {
+                position: relative;
+                width: 100%;
+                height: 50vh;
+                min-height: 350px;
+            }
+
+            .photo-sidebar img {
+                width: 100%;
+                object-position: center center;
+            }
+
+            body.scrolled .photo-sidebar {
+                position: fixed;
+                width: 100%;
+                height: 60px;
+                min-height: 60px;
+            }
+
+            .photo-sidebar::after {
+                top: auto;
+                bottom: 0;
+                right: 0;
+                left: 0;
+                width: 100%;
+                height: 1px;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            body.scrolled .main-content {
+                margin-left: 0;
+                margin-top: 60px;
+            }
+
+            /* Nav adjustments for tablet */
+            .nav-top-zone,
+            .nav-bottom-zone {
+                height: 15px;
+            }
+
+            .nav-middle-zone {
+                padding: 0 var(--space-xs);
+            }
+
+            .nav-strip {
+                border-radius: 6px;
+            }
+
+            .nav-logo-section {
+                width: auto;
+                padding: 0.7rem var(--space-sm);
+                border-right: 1px solid var(--color-border);
+            }
+
+            body.scrolled .nav-logo-section {
+                width: auto;
+            }
+
+            .nav-links-section {
+                padding: 0.7rem var(--space-sm);
+            }
+
+            .nav-links {
+                gap: var(--space-md);
+            }
+
+            .container {
+                padding: 0 var(--space-md);
+            }
+
+            .hero {
+                min-height: auto;
+                padding: var(--space-lg) 0;
+            }
+
+            .about-values {
+                grid-template-columns: 1fr;
+            }
+
+            .process-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .case-study-outcome {
+                flex-direction: column;
+                gap: var(--space-xs);
+            }
+
+            .contact-links {
+                flex-direction: column;
+            }
         }
 
+        /* ============================================
+           RESPONSIVE - Mobile (Fixed: vertical nav)
+           ============================================ */
         @media (max-width: 600px) {
-            .nav-links { gap: var(--space-sm); }
-            .nav-links a { font-size: 0.8rem; }
-            .hero-services span { font-size: 0.8rem; }
-            .process-grid { grid-template-columns: 1fr; }
-            .about-values { grid-template-columns: 1fr; }
-            .case-study-outcome { flex-direction: column; gap: var(--space-xs); }
-            .contact-links { flex-direction: column; align-items: center; }
-            .cursor-glow { display: none; }
-            nav .container {
+            /* Mobile nav - vertical stack with logo visible */
+            nav {
+                top: 0;
+            }
+
+            .nav-top-zone {
+                height: 10px;
+            }
+
+            .nav-bottom-zone {
+                height: 15px;
+            }
+
+            .nav-middle-zone {
+                padding: 0 var(--space-xs);
+            }
+
+            .nav-strip {
                 flex-direction: column;
-                align-items: flex-start;
-                gap: var(--space-sm);
+                align-items: center;
+                padding: 0.5rem 0;
+                gap: 0.25rem;
             }
-            .nav-links { 
-                gap: var(--space-sm);
+
+            .nav-logo-section {
+                display: flex; /* Keep logo visible */
                 width: 100%;
+                justify-content: center;
+                padding: 0.5rem var(--space-sm);
+                border-right: none;
+                border-bottom: 1px solid var(--color-border);
             }
-            .hero {
-                padding-top: 150px;
+
+            .logo {
+                font-size: 0.95rem;
+            }
+
+            body.scrolled .logo {
+                font-size: 0.9rem;
+            }
+
+            .nav-links-section {
+                width: 100%;
+                justify-content: center;
+                padding: 0.5rem var(--space-sm);
+            }
+
+            .nav-links {
+                gap: var(--space-sm);
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .nav-links a {
+                font-size: 0.8rem;
+            }
+
+            .hero-services span {
+                font-size: 0.75rem;
+            }
+
+            .photo-sidebar {
+                height: 45vh;
+                min-height: 300px;
+            }
+
+            /* Reduce invisible hit area on mobile for better touch */
+            .magnetic::before,
+            .magnetic-btn::before,
+            .nav-links a::before,
+            .btn::before,
+            .contact-link::before,
+            .skill-tag::before,
+            .hero-services span::before,
+            .magnetic-card::before {
+                top: -10px;
+                left: -10px;
+                right: -10px;
+                bottom: -10px;
             }
         }
 
@@ -688,52 +951,69 @@
                 animation-duration: 0.01ms !important;
                 transition-duration: 0.01ms !important;
             }
-            .cursor-glow { display: none; }
         }
     </style>
 </head>
 <body>
-    <div class="cursor-glow" id="cursorGlow"></div>
+    <!-- Fixed Photo Sidebar -->
+    <aside class="photo-sidebar">
+        <img src="portrait.jpeg" alt="Aadarsh Kumar Rauniyar">
+    </aside>
 
+    <!-- Navigation - 3 Section Design -->
     <nav id="navbar">
-        <div class="container">
-            <a href="#" class="logo magnetic" data-strength="20">Aadarsh Rauniyar</a>
-            <ul class="nav-links">
-                <li><a href="#about" class="magnetic" data-strength="25">About</a></li>
-                <li><a href="#work" class="magnetic" data-strength="25">Work</a></li>
-                <li><a href="#process" class="magnetic" data-strength="25">Process</a></li>
-                <li><a href="#contact" class="magnetic" data-strength="25">Contact</a></li>
-            </ul>
-        </div>
-    </nav>
-
-    <section class="hero">
-        <div class="container">
-            <div class="hero-content">
-                <h1 class="animate-in">I make <em>data</em> problems <span class="snap-text" id="snapText"><span class="letter-container" id="letterContainer">disappear.</span><span class="particle-container" id="particleContainer"></span></span></h1>
-                <p class="hero-subtitle animate-in delay-1">By slowing things down, thinking clearly, and building systems that work quietly in the background—so your data is something you can rely on.</p>
-                <div class="hero-services animate-in delay-2">
-                    <span class="magnetic" data-strength="15">Workflow Automation</span>
-                    <span class="magnetic" data-strength="15">Data Systems</span>
-                    <span class="magnetic" data-strength="15">Analytics & Dashboards</span>
-                    <span class="magnetic" data-strength="15">Process Design</span>
+        <!-- Top transparent zone for magnetic hover range -->
+        <div class="nav-top-zone"></div>
+        
+        <!-- Middle visible strip -->
+        <div class="nav-middle-zone">
+            <div class="nav-strip">
+                <div class="nav-logo-section">
+                    <a href="#" class="logo magnetic" data-strength="25">Aadarsh Rauniyar</a>
                 </div>
-                <div class="cta-group animate-in delay-3">
-                    <a href="#work" class="btn btn-primary magnetic-btn" data-strength="12">
-                        <span class="btn-inner">See how I work</span>
-                    </a>
-                    <a href="#contact" class="btn btn-secondary magnetic-btn" data-strength="12">
-                        <span class="btn-inner">Get in touch</span>
-                    </a>
+                <div class="nav-links-section">
+                    <ul class="nav-links">
+                        <li><a href="#about" class="magnetic" data-strength="25">About</a></li>
+                        <li><a href="#work" class="magnetic" data-strength="25">Work</a></li>
+                        <li><a href="#process" class="magnetic" data-strength="25">Process</a></li>
+                        <li><a href="#contact" class="magnetic" data-strength="25">Contact</a></li>
+                    </ul>
                 </div>
             </div>
         </div>
-    </section>
+        
+        <!-- Bottom transparent zone for magnetic hover range -->
+        <div class="nav-bottom-zone"></div>
+    </nav>
 
-    <section class="about" id="about">
-        <div class="container">
-            <div class="about-grid">
-                <div class="about-intro">
+    <!-- Main Content -->
+    <main class="main-content">
+        <section class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <h1 class="animate-in">I make <em>data</em> problems <span class="snap-text" id="snapText"><span class="letter-container" id="letterContainer">disappear.</span><span class="particle-container" id="particleContainer"></span></span></h1>
+                    <p class="hero-subtitle animate-in delay-1">By slowing things down, thinking clearly, and building systems that work quietly in the background—so your data is something you can rely on.</p>
+                    <div class="hero-services animate-in delay-2">
+                        <span class="magnetic" data-strength="25">Workflow Automation</span>
+                        <span class="magnetic" data-strength="25">Data Systems</span>
+                        <span class="magnetic" data-strength="25">Analytics & Dashboards</span>
+                        <span class="magnetic" data-strength="25">Process Design</span>
+                    </div>
+                    <div class="cta-group animate-in delay-3">
+                        <a href="#work" class="btn btn-primary magnetic-btn" data-strength="12">
+                            <span class="btn-inner">See how I work</span>
+                        </a>
+                        <a href="#contact" class="btn btn-secondary magnetic-btn" data-strength="12">
+                            <span class="btn-inner">Get in touch</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="about" id="about">
+            <div class="container">
+                <div class="section-header">
                     <p class="section-label">About</p>
                     <h2 class="section-title">Building systems you can rely on</h2>
                 </div>
@@ -763,116 +1043,114 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <section class="work" id="work">
-        <div class="container">
-            <div class="section-header">
-                <p class="section-label">Selected Work</p>
-                <h2 class="section-title">Projects that brought clarity</h2>
-            </div>
-            <div class="work-grid">
-                <article class="case-study magnetic-card" data-strength="6">
-                    <div class="case-study-header">
-                        <span class="case-study-type">Dashboard</span>
-                    </div>
-                    <h3>Lead Analytics Dashboard for an Education Consultancy</h3>
-                    <p class="case-study-desc">Built an internal web-based dashboard to track student leads, application stages, counselor workloads, and institution-level outcomes—all in one place. Replaced manual tracking methods with a centralized, real-time view.</p>
-                    <div class="case-study-outcome">
-                        <div class="outcome-item">
-                            <strong>Unified view</strong>
-                            Centralized data from multiple sources
-                        </div>
-                        <div class="outcome-item">
-                            <strong>Real-time</strong>
-                            Instant visibility into operations
-                        </div>
-                        <div class="outcome-item">
-                            <strong>Actionable</strong>
-                            Identified bottlenecks and workload imbalances
-                        </div>
-                    </div>
-                </article>
-
-                <article class="case-study magnetic-card" data-strength="6">
-                    <div class="case-study-header">
-                        <span class="case-study-type">Data Integration</span>
-                    </div>
-                    <h3>Student Analytics with Standardized Data Pipeline</h3>
-                    <p class="case-study-desc">Developed a custom solution to combine and clean staff data stored in different formats across multiple files. Created tailored Python logic to produce a single, consistent dataset for management review.</p>
-                    <div class="case-study-outcome">
-                        <div class="outcome-item">
-                            <strong>Standardized</strong>
-                            One clean dataset from messy sources
-                        </div>
-                        <div class="outcome-item">
-                            <strong>Comparable</strong>
-                            Easy performance comparisons
-                        </div>
-                        <div class="outcome-item">
-                            <strong>Saved hours</strong>
-                            No more manual reconciliation
-                        </div>
-                    </div>
-                </article>
-
-                <article class="case-study magnetic-card" data-strength="6">
-                    <div class="case-study-header">
-                        <span class="case-study-type">Automation</span>
-                    </div>
-                    <h3>Internal Operations Dashboard & Task Automation</h3>
-                    <p class="case-study-desc">Created a dashboard to help management view and track operational data in one place. Built small Python programs to automate daily tasks and reduce manual work, while improving data entry practices across the team.</p>
-                    <div class="case-study-outcome">
-                        <div class="outcome-item">
-                            <strong>Reduced manual work</strong>
-                            Automated repetitive daily tasks
-                        </div>
-                        <div class="outcome-item">
-                            <strong>Better data quality</strong>
-                            Improved entry practices
-                        </div>
-                    </div>
-                </article>
-            </div>
-        </div>
-    </section>
-
-    <section class="process" id="process">
-        <div class="container">
-            <div class="section-header">
-                <p class="section-label">How I Work</p>
-                <h2 class="section-title">A calm, structured approach</h2>
-            </div>
-            <div class="process-grid">
-                <div class="process-step magnetic-card" data-strength="10">
-                    <div class="process-number">01</div>
-                    <h4>Understand</h4>
-                    <p>Listen carefully. Ask questions. Make sure we're solving the right problem before writing any code.</p>
+        <section class="work" id="work">
+            <div class="container">
+                <div class="section-header">
+                    <p class="section-label">Selected Work</p>
+                    <h2 class="section-title">Projects that brought clarity</h2>
                 </div>
-                <div class="process-step magnetic-card" data-strength="10">
-                    <div class="process-number">02</div>
-                    <h4>Simplify</h4>
-                    <p>Strip away complexity. Find the clearest path from messy data to useful insight.</p>
-                </div>
-                <div class="process-step magnetic-card" data-strength="10">
-                    <div class="process-number">03</div>
-                    <h4>Build</h4>
-                    <p>Create systems that are reliable, maintainable, and genuinely useful for the people who use them.</p>
-                </div>
-                <div class="process-step magnetic-card" data-strength="10">
-                    <div class="process-number">04</div>
-                    <h4>Support</h4>
-                    <p>Communicate clearly throughout. Ensure the solution works long after handover.</p>
+                <div class="work-grid">
+                    <article class="case-study magnetic-card" data-strength="6">
+                        <div class="case-study-header">
+                            <span class="case-study-type">Dashboard</span>
+                        </div>
+                        <h3>Lead Analytics Dashboard for an Education Consultancy</h3>
+                        <p class="case-study-desc">Built an internal web-based dashboard to track student leads, application stages, counselor workloads, and institution-level outcomes—all in one place. Replaced manual tracking methods with a centralized, real-time view.</p>
+                        <div class="case-study-outcome">
+                            <div class="outcome-item">
+                                <strong>Unified view</strong>
+                                Centralized data from multiple sources
+                            </div>
+                            <div class="outcome-item">
+                                <strong>Real-time</strong>
+                                Instant visibility into operations
+                            </div>
+                            <div class="outcome-item">
+                                <strong>Actionable</strong>
+                                Identified bottlenecks and workload imbalances
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="case-study magnetic-card" data-strength="6">
+                        <div class="case-study-header">
+                            <span class="case-study-type">Data Integration</span>
+                        </div>
+                        <h3>Student Analytics with Standardized Data Pipeline</h3>
+                        <p class="case-study-desc">Developed a custom solution to combine and clean staff data stored in different formats across multiple files. Created tailored Python logic to produce a single, consistent dataset for management review.</p>
+                        <div class="case-study-outcome">
+                            <div class="outcome-item">
+                                <strong>Standardized</strong>
+                                One clean dataset from messy sources
+                            </div>
+                            <div class="outcome-item">
+                                <strong>Comparable</strong>
+                                Easy performance comparisons
+                            </div>
+                            <div class="outcome-item">
+                                <strong>Saved hours</strong>
+                                No more manual reconciliation
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="case-study magnetic-card" data-strength="6">
+                        <div class="case-study-header">
+                            <span class="case-study-type">Automation</span>
+                        </div>
+                        <h3>Internal Operations Dashboard & Task Automation</h3>
+                        <p class="case-study-desc">Created a dashboard to help management view and track operational data in one place. Built small Python programs to automate daily tasks and reduce manual work, while improving data entry practices across the team.</p>
+                        <div class="case-study-outcome">
+                            <div class="outcome-item">
+                                <strong>Reduced manual work</strong>
+                                Automated repetitive daily tasks
+                            </div>
+                            <div class="outcome-item">
+                                <strong>Better data quality</strong>
+                                Improved entry practices
+                            </div>
+                        </div>
+                    </article>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <section class="skills" id="skills">
-        <div class="container">
-            <div class="skills-content">
-                <div>
+        <section class="process" id="process">
+            <div class="container">
+                <div class="section-header">
+                    <p class="section-label">How I Work</p>
+                    <h2 class="section-title">A calm, structured approach</h2>
+                </div>
+                <div class="process-grid">
+                    <div class="process-step magnetic-card" data-strength="10">
+                        <div class="process-number">01</div>
+                        <h4>Understand</h4>
+                        <p>Listen carefully. Ask questions. Make sure we're solving the right problem before writing any code.</p>
+                    </div>
+                    <div class="process-step magnetic-card" data-strength="10">
+                        <div class="process-number">02</div>
+                        <h4>Simplify</h4>
+                        <p>Strip away complexity. Find the clearest path from messy data to useful insight.</p>
+                    </div>
+                    <div class="process-step magnetic-card" data-strength="10">
+                        <div class="process-number">03</div>
+                        <h4>Build</h4>
+                        <p>Create systems that are reliable, maintainable, and genuinely useful for the people who use them.</p>
+                    </div>
+                    <div class="process-step magnetic-card" data-strength="10">
+                        <div class="process-number">04</div>
+                        <h4>Support</h4>
+                        <p>Communicate clearly throughout. Ensure the solution works long after handover.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="skills" id="skills">
+            <div class="container">
+                <div class="section-header">
                     <p class="section-label">Tools & Skills</p>
                     <h2 class="section-title">What I work with</h2>
                 </div>
@@ -889,52 +1167,77 @@
                     <span class="skill-tag magnetic" data-strength="20">Git</span>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <section class="contact" id="contact">
-        <div class="container">
-            <div class="contact-content">
-                <h2>Let's work together</h2>
-                <p>If you think I can help bring clarity to your data challenges, I'd be happy to hear from you.</p>
-                <div class="contact-links">
-                    <a href="mailto:aadarsh.rauniyar11@gmail.com" class="contact-link magnetic-btn" data-strength="15">
-                        <span class="contact-link-inner">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-                            </svg>
-                            Email me
-                        </span>
-                    </a>
-                    <a href="https://www.linkedin.com/in/aadarsh-kumar-rauniyar/" target="_blank" class="contact-link magnetic-btn" data-strength="15">
-                        <span class="contact-link-inner">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                            </svg>
-                            LinkedIn
-                        </span>
-                    </a>
-                    <a href="https://github.com/awes11" target="_blank" class="contact-link magnetic-btn" data-strength="15">
-                        <span class="contact-link-inner">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                            </svg>
-                            GitHub
-                        </span>
-                    </a>
+        <section class="contact" id="contact">
+            <div class="container">
+                <div class="contact-content">
+                    <h2>Let's work together</h2>
+                    <p>If you think I can help bring clarity to your data challenges, I'd be happy to hear from you.</p>
+                    <div class="contact-links">
+                        <a href="mailto:aadarsh.rauniyar11@gmail.com" class="contact-link magnetic-btn" data-strength="15">
+                            <span class="contact-link-inner">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                                </svg>
+                                Email me
+                            </span>
+                        </a>
+                        <a href="https://www.linkedin.com/in/aadarsh-kumar-rauniyar/" target="_blank" class="contact-link magnetic-btn" data-strength="15">
+                            <span class="contact-link-inner">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                                </svg>
+                                LinkedIn
+                            </span>
+                        </a>
+                        <a href="https://github.com/awes11" target="_blank" class="contact-link magnetic-btn" data-strength="15">
+                            <span class="contact-link-inner">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                                </svg>
+                                GitHub
+                            </span>
+                        </a>
+                    </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <footer>
-        <div class="container">
-            <p>© 2026 Aadarsh Kumar Rauniyar · Kathmandu, Nepal</p>
-        </div>
-    </footer>
+        <footer>
+            <div class="container">
+                <p>© 2026 Aadarsh Kumar Rauniyar · Kathmandu, Nepal</p>
+            </div>
+        </footer>
+    </main>
 
     <script>
-        // Thanos Snap Disappear Effect - Letter by Letter
+        // Scroll detection for photo sidebar collapse
+        const body = document.body;
+        const hero = document.querySelector('.hero');
+        let heroBottom = 0;
+
+        function updateHeroBottom() {
+            heroBottom = hero.offsetTop + hero.offsetHeight - 100;
+        }
+
+        function handleScroll() {
+            const scrollY = window.scrollY;
+            if (scrollY > heroBottom) {
+                body.classList.add('scrolled');
+            } else {
+                body.classList.remove('scrolled');
+            }
+        }
+
+        updateHeroBottom();
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        window.addEventListener('resize', () => {
+            updateHeroBottom();
+            handleScroll();
+        });
+
+        // Thanos Snap Effect
         class ThanosSnap {
             constructor(element) {
                 this.element = element;
@@ -976,7 +1279,6 @@
                 const offsetX = rect.left - containerRect.left;
                 const offsetY = rect.top - containerRect.top;
                 
-                // More particles, smaller size
                 const particleCount = 15 + Math.floor(Math.random() * 10);
                 const particles = [];
                 
@@ -984,19 +1286,12 @@
                     const particle = document.createElement('span');
                     particle.className = 'particle';
                     
-                    // Position within the letter bounds with slight randomness
                     const x = offsetX + Math.random() * rect.width;
                     const y = offsetY + Math.random() * rect.height;
-                    
-                    // Much smaller particles (0.5 - 1.5px)
                     const size = 0.5 + Math.random() * 1;
-                    
-                    // Trajectory - upward and slightly right, with spread
                     const tx = 15 + Math.random() * 40;
                     const ty = -20 - Math.random() * 50;
                     const rot = Math.random() * 360;
-                    
-                    // Stagger particles within each letter
                     const delay = delayOffset + Math.random() * 0.15;
                     const duration = 0.6 + Math.random() * 0.5;
                     
@@ -1024,12 +1319,10 @@
                 this.isAnimating = true;
                 this.element.classList.add('snapping');
                 
-                // Clear any existing particles and timeouts
                 this.clearAnimations();
                 
-                // Animate letters from last to first
                 const totalLetters = this.letters.length;
-                const delayBetweenLetters = 80; // ms between each letter
+                const delayBetweenLetters = 80;
                 
                 for (let i = totalLetters - 1; i >= 0; i--) {
                     const reverseIndex = totalLetters - 1 - i;
@@ -1039,7 +1332,6 @@
                         const letter = this.letters[i];
                         letter.classList.add('disintegrating');
                         
-                        // Create particles for this letter
                         const particles = this.createParticlesForLetter(letter, 0);
                         particles.forEach(p => p.classList.add('active'));
                     }, delay);
@@ -1047,7 +1339,6 @@
                     this.animationTimeouts.push(timeout);
                 }
                 
-                // Mark animation as complete
                 const totalDuration = totalLetters * delayBetweenLetters + 1200;
                 const completeTimeout = setTimeout(() => {
                     this.isSnapped = true;
@@ -1064,9 +1355,8 @@
                 this.element.classList.remove('snapping');
                 this.element.classList.add('reforming');
                 
-                // Reform letters from first to last
                 const totalLetters = this.letters.length;
-                const delayBetweenLetters = 50; // Faster reform
+                const delayBetweenLetters = 50;
                 
                 for (let i = 0; i < totalLetters; i++) {
                     const delay = i * delayBetweenLetters;
@@ -1079,7 +1369,6 @@
                     this.animationTimeouts.push(timeout);
                 }
                 
-                // Clean up after reform
                 const totalDuration = totalLetters * delayBetweenLetters + 300;
                 const completeTimeout = setTimeout(() => {
                     this.particleContainer.innerHTML = '';
@@ -1102,7 +1391,23 @@
             new ThanosSnap(snapText);
         }
 
-        // Smooth Magnetic hover effect class with lerp interpolation
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // ============================================
+        // MAGNETIC HOVER EFFECT WITH BOUNCE INERTIA
+        // ============================================
         class MagneticElement {
             constructor(element) {
                 this.element = element;
@@ -1111,11 +1416,15 @@
                 this.isBtn = element.classList.contains('magnetic-btn');
                 this.innerEl = element.querySelector('.btn-inner, .contact-link-inner');
                 
-                // Current and target positions for smooth interpolation
+                // Current and target positions
                 this.currentX = 0;
                 this.currentY = 0;
                 this.targetX = 0;
                 this.targetY = 0;
+                
+                // Velocity for bounce effect
+                this.velocityX = 0;
+                this.velocityY = 0;
                 
                 // For cards - tilt values
                 this.currentTiltX = 0;
@@ -1131,8 +1440,16 @@
                 
                 this.isHovered = false;
                 this.isAnimating = false;
-                this.lerpFactor = 0.12; // Smoothness factor (lower = smoother but slower)
-                this.returnLerpFactor = 0.08; // Even smoother return
+                
+                // Physics parameters
+                this.lerpFactor = 0.05;
+                this.bounceStiffness = 0.03;
+                this.bounceDamping = 0.91;
+
+                // For fade-in effect
+                this.strengthMultiplier = 0;
+                this.fadeInSpeed = 0.08;
+                this.fadeOutSpeed = 0.12;
                 
                 this.bindEvents();
             }
@@ -1140,6 +1457,7 @@
             bindEvents() {
                 this.element.addEventListener('mouseenter', () => {
                     this.isHovered = true;
+                    this.strengthMultiplier = 0;
                     if (!this.isAnimating) {
                         this.isAnimating = true;
                         this.animate();
@@ -1148,6 +1466,8 @@
                 
                 this.element.addEventListener('mouseleave', () => {
                     this.isHovered = false;
+                    this.velocityX = (this.targetX - this.currentX) * 0.15;
+                    this.velocityY = (this.targetY - this.currentY) * 0.15;
                     this.targetX = 0;
                     this.targetY = 0;
                     this.targetTiltX = 0;
@@ -1173,10 +1493,8 @@
                 const deltaX = e.clientX - centerX;
                 const deltaY = e.clientY - centerY;
                 
-                const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
                 const maxDistance = Math.max(rect.width, rect.height);
                 
-                // Calculate movement based on cursor position relative to center
                 const moveX = (deltaX / maxDistance) * this.strength;
                 const moveY = (deltaY / maxDistance) * this.strength;
                 
@@ -1197,20 +1515,64 @@
             }
 
             animate() {
-                // Use different lerp factors for entering vs returning
-                const factor = this.isHovered ? this.lerpFactor : this.returnLerpFactor;
+                // Update strength multiplier for fade-in/out
+                if (this.isHovered && this.strengthMultiplier < 1) {
+                    this.strengthMultiplier += this.fadeInSpeed;
+                    if (this.strengthMultiplier > 1) this.strengthMultiplier = 1;
+                } else if (!this.isHovered && this.strengthMultiplier > 0) {
+                    this.strengthMultiplier -= this.fadeOutSpeed;
+                    if (this.strengthMultiplier < 0) this.strengthMultiplier = 0;
+                }
                 
-                // Interpolate current values toward target
-                this.currentX = this.lerp(this.currentX, this.targetX, factor);
-                this.currentY = this.lerp(this.currentY, this.targetY, factor);
+                // Apply the multiplier to create fade-in effect
+                const effectiveTargetX = this.targetX * this.strengthMultiplier;
+                const effectiveTargetY = this.targetY * this.strengthMultiplier;
+                const effectiveTargetTiltX = this.targetTiltX * this.strengthMultiplier;
+                const effectiveTargetTiltY = this.targetTiltY * this.strengthMultiplier;
+                const effectiveTargetInnerX = this.targetInnerX * this.strengthMultiplier;
+                const effectiveTargetInnerY = this.targetInnerY * this.strengthMultiplier;
                 
+                if (this.isHovered) {
+                    this.currentX = this.lerp(this.currentX, effectiveTargetX, this.lerpFactor);
+                    this.currentY = this.lerp(this.currentY, effectiveTargetY, this.lerpFactor);
+                    this.currentTiltX = this.lerp(this.currentTiltX, effectiveTargetTiltX, this.lerpFactor);
+                    this.currentTiltY = this.lerp(this.currentTiltY, effectiveTargetTiltY, this.lerpFactor);
+                    this.currentInnerX = this.lerp(this.currentInnerX, effectiveTargetInnerX, this.lerpFactor);
+                    this.currentInnerY = this.lerp(this.currentInnerY, effectiveTargetInnerY, this.lerpFactor);
+                } else {
+                    // Spring physics with bounce when not hovered
+                    const springX = -this.currentX * this.bounceStiffness;
+                    const springY = -this.currentY * this.bounceStiffness;
+                    
+                    this.velocityX += springX;
+                    this.velocityY += springY;
+                    
+                    this.velocityX *= this.bounceDamping;
+                    this.velocityY *= this.bounceDamping;
+                    
+                    this.currentX += this.velocityX;
+                    this.currentY += this.velocityY;
+                    
+                    // Same for tilt and inner elements
+                    const springTiltX = -this.currentTiltX * this.bounceStiffness;
+                    const springTiltY = -this.currentTiltY * this.bounceStiffness;
+                    this.currentTiltX += springTiltX;
+                    this.currentTiltY += springTiltY;
+                    this.currentTiltX *= this.bounceDamping;
+                    this.currentTiltY *= this.bounceDamping;
+                    
+                    const springInnerX = -this.currentInnerX * this.bounceStiffness;
+                    const springInnerY = -this.currentInnerY * this.bounceStiffness;
+                    this.currentInnerX += springInnerX;
+                    this.currentInnerY += springInnerY;
+                    this.currentInnerX *= this.bounceDamping;
+                    this.currentInnerY *= this.bounceDamping;
+                }
+                
+                // Apply transforms
                 if (this.isCard) {
-                    this.currentTiltX = this.lerp(this.currentTiltX, this.targetTiltX, factor);
-                    this.currentTiltY = this.lerp(this.currentTiltY, this.targetTiltY, factor);
                     this.element.style.transform = `translate3d(${this.currentX}px, ${this.currentY}px, 0) perspective(1000px) rotateX(${this.currentTiltX}deg) rotateY(${this.currentTiltY}deg)`;
                 } else if (this.isBtn && this.innerEl) {
-                    this.currentInnerX = this.lerp(this.currentInnerX, this.targetInnerX, factor);
-                    this.currentInnerY = this.lerp(this.currentInnerY, this.targetInnerY, factor);
                     this.element.style.transform = `translate3d(${this.currentX}px, ${this.currentY}px, 0)`;
                     this.innerEl.style.transform = `translate3d(${this.currentInnerX}px, ${this.currentInnerY}px, 0)`;
                 } else {
@@ -1218,84 +1580,48 @@
                 }
                 
                 // Check if we need to keep animating
-                const threshold = 0.01;
+                const threshold = 0.005;
+                const velocityThreshold = 0.005;
                 const isMoving = 
-                    Math.abs(this.currentX - this.targetX) > threshold ||
-                    Math.abs(this.currentY - this.targetY) > threshold ||
-                    Math.abs(this.currentTiltX - this.targetTiltX) > threshold ||
-                    Math.abs(this.currentTiltY - this.targetTiltY) > threshold ||
-                    Math.abs(this.currentInnerX - this.targetInnerX) > threshold ||
-                    Math.abs(this.currentInnerY - this.targetInnerY) > threshold;
+                    Math.abs(this.currentX) > threshold ||
+                    Math.abs(this.currentY) > threshold ||
+                    Math.abs(this.currentTiltX) > threshold ||
+                    Math.abs(this.currentTiltY) > threshold ||
+                    Math.abs(this.currentInnerX) > threshold ||
+                    Math.abs(this.currentInnerY) > threshold ||
+                    Math.abs(this.velocityX) > velocityThreshold ||
+                    Math.abs(this.velocityY) > velocityThreshold ||
+                    this.strengthMultiplier > 0 ||
+                    this.isHovered;
                 
                 if (isMoving || this.isHovered) {
                     requestAnimationFrame(() => this.animate());
                 } else {
                     // Snap to final position and stop
-                    this.currentX = this.targetX;
-                    this.currentY = this.targetY;
-                    this.currentTiltX = this.targetTiltX;
-                    this.currentTiltY = this.targetTiltY;
-                    this.currentInnerX = this.targetInnerX;
-                    this.currentInnerY = this.targetInnerY;
+                    this.currentX = 0;
+                    this.currentY = 0;
+                    this.currentTiltX = 0;
+                    this.currentTiltY = 0;
+                    this.currentInnerX = 0;
+                    this.currentInnerY = 0;
+                    this.velocityX = 0;
+                    this.velocityY = 0;
                     
-                    if (!this.isHovered) {
-                        this.element.style.transform = '';
-                        if (this.innerEl) {
-                            this.innerEl.style.transform = '';
-                        }
+                    this.element.style.transform = '';
+                    if (this.innerEl) {
+                        this.innerEl.style.transform = '';
                     }
                     this.isAnimating = false;
                 }
             }
         }
 
-        // Initialize magnetic elements
-        document.querySelectorAll('.magnetic, .magnetic-card, .magnetic-btn').forEach(el => {
-            new MagneticElement(el);
-        });
-
-        // Cursor glow follower
-        const cursorGlow = document.getElementById('cursorGlow');
-        let glowX = 0, glowY = 0;
-        let currentX = 0, currentY = 0;
-
-        document.addEventListener('mousemove', (e) => {
-            glowX = e.clientX;
-            glowY = e.clientY;
-        });
-
-        function animateGlow() {
-            currentX += (glowX - currentX) * 0.08;
-            currentY += (glowY - currentY) * 0.08;
-            cursorGlow.style.left = currentX + 'px';
-            cursorGlow.style.top = currentY + 'px';
-            requestAnimationFrame(animateGlow);
-        }
-        animateGlow();
-
-        // Navbar scroll effect
-        const navbar = document.getElementById('navbar');
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 50) {
-                navbar.classList.add('scrolled');
-            } else {
-                navbar.classList.remove('scrolled');
-            }
-        });
-
-        // Smooth scroll for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
+        // Initialize magnetic elements (skip on reduced motion preference)
+        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            document.querySelectorAll('.magnetic, .magnetic-card, .magnetic-btn').forEach(el => {
+                new MagneticElement(el);
             });
-        });
+        }
 
         // Intersection observer for fade-in animations
         const observerOptions = {
